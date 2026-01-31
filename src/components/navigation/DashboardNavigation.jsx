@@ -27,6 +27,7 @@ const DashboardNavigation = ({ userRole = 'student', notificationCount = 0 }) =>
 
   const wardenNavItems = [
     { path: '/warden-dashboard', label: 'Dashboard', icon: 'LayoutDashboard' },
+    { path: '/attendance-monitoring', label: 'Attendance Monitoring', icon: 'Users' },
   ];
 
   const navItems = userRole === 'student' ? studentNavItems : wardenNavItems;

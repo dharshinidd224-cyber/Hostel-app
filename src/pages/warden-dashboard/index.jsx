@@ -93,24 +93,13 @@ const WardenDashboard = () => {
     },
     {
       id: 3,
-      title: 'Post Notice',
+      title: 'Post Notice & Emergency Alert',
       description: 'Create and publish important announcements',
       icon: 'Bell',
       iconColor: 'var(--color-secondary)',
       bgColor: 'bg-secondary/10',
-      actionText: 'Create Notice',
+      actionText: 'Create Notice and Alerts',
       actionPath: '/post-notice',
-      badge: null
-    },
-    {
-      id: 4,
-      title: 'Emergency Alert',
-      description: 'Send urgent notifications to all students',
-      icon: 'AlertTriangle',
-      iconColor: 'var(--color-error)',
-      bgColor: 'bg-error/10',
-      actionText: 'Send Alert',
-      actionPath: '/send-alert',
       badge: null
     }
   ];
@@ -208,15 +197,6 @@ const WardenDashboard = () => {
             >
               Export Report
             </Button>
-            <Button
-              variant="destructive"
-              iconName="AlertTriangle"
-              iconPosition="left"
-              onClick={handleEmergencyAlert}
-              className="text-sm md:text-base"
-            >
-              Emergency Alert
-            </Button>
           </div>
         </div>
 
@@ -260,7 +240,7 @@ const WardenDashboard = () => {
           <h2 className="text-xl md:text-2xl font-semibold text-foreground mb-4 md:mb-6">
             Quick Actions
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {quickActions?.map((action) => (
               <QuickActionCard
                 key={action?.id}

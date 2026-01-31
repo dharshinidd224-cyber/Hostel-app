@@ -15,6 +15,8 @@ import SubmitGrievance from './pages/submit-grievance';
 import MyGrievances from './pages/my-grievances';
 import AttendanceMarking from './pages/attendance-marking';
 import GrievanceManagement from './pages/grievance-management';
+import NoticesandAlerts from './pages/notices-and-alerts';
+import AttendanceMonitoring from './pages/attendance-monitoring';
 
 const Routes = () => {
   return (
@@ -32,11 +34,17 @@ const Routes = () => {
         <Route path="/student-registration" element={<StudentRegistration />} />
          <Route path="/" element={<AttendanceMarking />} />
         <Route path="/give-feedback" element={<GiveFeedback />} />
+        <Route path="/feedback" element={<GiveFeedback />} />
         <Route path="/post-notice-alert" element={<PostNoticeAlert />} />
+        <Route path="/post-notice" element={<PostNoticeAlert />} />
+        <Route path="/send-alert" element={<PostNoticeAlert />} />
+        <Route path="/notices" element={<NoticesandAlerts />} />
+        <Route path="/alerts" element={<NoticesandAlerts />} />
         <Route path="/submit-grievance" element={<SubmitGrievance />} />
         <Route path="/my-grievances" element={<MyGrievances />} />
         <Route path="/attendance-marking" element={<AttendanceMarking />} />
         <Route path="/grievance-management" element={<GrievanceManagement />} />
+        <Route path="/attendance-monitoring" element={<AttendanceMonitoring />} />
         <Route path="*" element={<NotFound />} />
       </RouterRoutes>
       </ErrorBoundary>
@@ -45,4 +53,3 @@ const Routes = () => {
 };
 
 export default Routes;
-
