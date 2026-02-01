@@ -4,6 +4,7 @@ import Input from '../../../components/ui/Input';
 import Select from '../../../components/ui/Select';
 import Button from '../../../components/ui/Button';
 import Icon from '../../../components/AppIcon';
+import api from '../../../utils/api';
 
 const RegistrationForm = () => {
   const navigate = useNavigate();
@@ -138,19 +139,35 @@ const RegistrationForm = () => {
   };
 
   const handleSubmit = async (e) => {
-    e?.preventDefault();
+  e.preventDefault();
 
-    if (!validateForm()) {
-      return;
+  if (!validateForm()) return;
+
+  setLoading(true);
+  setErrors({});
+
+  try {
+    await api.post("/auth/register", {
+      userId: formData.collegeId,
+      password: formData.password,
+      role: "student"
+    });
+
+    navigate("/login");
+  } catch (err) {
+    if (err.response?.status === 409) {
+      setErrors({
+        submit: "College ID already registered. Please login."
+      });
+    } else {
+      setErrors({
+        submit: "Registration failed. Please try again."
+      });
     }
-
-    setLoading(true);
-
-    setTimeout(() => {
-      setLoading(false);
-      navigate('/student-dashboard');
-    }, 2000);
-  };
+  } finally {
+    setLoading(false); // ✅ VERY IMPORTANT
+  }
+};
 
   const getPasswordStrength = (password) => {
     if (!password) return { strength: 0, label: '', color: '' };
@@ -304,6 +321,13 @@ const RegistrationForm = () => {
           <Icon name={showConfirmPassword ? 'EyeOff' : 'Eye'} size={20} />
         </button>
       </div>
+      {/* Submit error message */}
+{errors?.submit && (
+  <div className="p-3 bg-destructive/10 text-destructive rounded-lg text-sm">
+    {errors.submit}
+  </div>
+)}
+
       <div className="pt-4 md:pt-6">
         <Button
           type="submit"

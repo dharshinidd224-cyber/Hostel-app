@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Input from '../../../components/ui/Input';
 import Button from '../../../components/ui/Button';
 import Icon from '../../../components/AppIcon';
+import api from '../../../utils/api';
 
 const LoginForm = () => {
   const navigate = useNavigate();
@@ -15,16 +16,6 @@ const LoginForm = () => {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
-  const mockCredentials = {
-    student: {
-      userId: 'STU2024001',
-      password: 'student123'
-    },
-    warden: {
-      userId: 'WAR2024001',
-      password: 'warden123'
-    }
-  };
 
   const handleInputChange = (e) => {
     const { name, value } = e?.target;
@@ -66,31 +57,38 @@ const LoginForm = () => {
   };
 
   const handleSubmit = async (e) => {
-    e?.preventDefault();
+  e.preventDefault();
 
-    if (!validateForm()) {
-      return;
+  if (!validateForm()) return;
+
+  setLoading(true);
+  setErrors({});
+
+  try {
+    const res = await api.post("/auth/login", {
+      userId: formData.userId,
+      password: formData.password
+    });
+
+    const token = res.data.token;
+    localStorage.setItem("token", token);
+
+    const payload = JSON.parse(atob(token.split(".")[1]));
+
+    if (payload.role === "student") {
+      navigate("/student-dashboard");
+    } else if (payload.role === "warden") {
+      navigate("/warden-dashboard");
     }
+  } catch (err) {
+    setErrors({
+      submit: "Invalid College ID or password."
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
-    setLoading(true);
-
-    setTimeout(() => {
-      const credentials = mockCredentials?.[formData?.role];
-      
-      if (formData?.userId === credentials?.userId && formData?.password === credentials?.password) {
-        if (formData?.role === 'student') {
-          navigate('/student-dashboard');
-        } else {
-          navigate('/warden-dashboard');
-        }
-      } else {
-        setErrors({
-          submit: `Invalid ${formData?.role === 'student' ? 'College ID' : 'Staff ID'} or password. Please try again.`
-        });
-      }
-      setLoading(false);
-    }, 1500);
-  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">

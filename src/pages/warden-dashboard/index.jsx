@@ -101,6 +101,17 @@ const WardenDashboard = () => {
       actionText: 'Create Notice and Alerts',
       actionPath: '/post-notice',
       badge: null
+    },
+    {
+      id: 4,
+      title: 'Feedback Dashboard',
+      description: 'View and manage student feedback on food, cleanliness, security',
+      icon: 'MessageSquare',
+      iconColor: 'var(--color-success)',
+      bgColor: 'bg-success/10',
+      actionText: 'View Feedback',
+      actionPath: '/feedback-dashboard',
+      badge: '8'
     }
   ];
 
@@ -240,7 +251,7 @@ const WardenDashboard = () => {
           <h2 className="text-xl md:text-2xl font-semibold text-foreground mb-4 md:mb-6">
             Quick Actions
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
             {quickActions?.map((action) => (
               <QuickActionCard
                 key={action?.id}

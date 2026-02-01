@@ -4,10 +4,12 @@ import Input from '../../../components/ui/Input';
 import Select from '../../../components/ui/Select';
 import Button from '../../../components/ui/Button';
 import Icon from '../../../components/AppIcon';
+import api from '../../../utils/api';
+
 
 const RegistrationForm = () => {
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -79,19 +81,36 @@ const RegistrationForm = () => {
   };
 
   const handleSubmit = async (e) => {
-    e?.preventDefault();
-    
-    if (!validateForm()) {
-      return;
+  e.preventDefault();
+
+  if (!validateForm()) return;
+
+  setLoading(true);
+  setErrors({});
+
+  try {
+    await api.post("/auth/register", {
+      userId: formData.staffId,   // or collegeId equivalent
+      password: formData.password,
+      role: "warden"
+    });
+
+    navigate("/login");
+  } catch (err) {
+    if (err.response?.status === 409) {
+      setErrors({
+        submit: "Staff ID already registered. Please login."
+      });
+    } else {
+      setErrors({
+        submit: "Warden registration failed."
+      });
     }
+  } finally {
+    setLoading(false);
+  }
+};
 
-    setIsLoading(true);
-
-    setTimeout(() => {
-      setIsLoading(false);
-      navigate('/warden-dashboard');
-    }, 2000);
-  };
 
   const handleBackToLogin = () => {
     navigate('/login');
@@ -213,7 +232,11 @@ const RegistrationForm = () => {
               </div>
             </div>
           </div>
-
+          {errors?.submit && (
+  <div className="p-3 bg-destructive/10 text-destructive rounded-lg text-sm">
+    {errors.submit}
+  </div>
+)}
           <div className="flex flex-col sm:flex-row gap-3 pt-2">
             <Button
               type="button"
@@ -228,16 +251,15 @@ const RegistrationForm = () => {
             <Button
               type="submit"
               variant="default"
-              loading={isLoading}
+              loading={loading}
               iconName="UserPlus"
               iconPosition="right"
               className="w-full sm:flex-1"
             >
-              {isLoading ? 'Creating Account...' : 'Register as Warden'}
+              {loading ? 'Creating Account...' : 'Register as Warden'}
             </Button>
           </div>
         </form>
-
         <div className="mt-6 pt-6 border-t border-border text-center">
           <p className="text-sm text-muted-foreground">
             Already have an account?{' '}

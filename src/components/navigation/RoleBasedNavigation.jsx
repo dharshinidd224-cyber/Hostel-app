@@ -61,6 +61,9 @@ const RoleBasedNavigation = ({
       icon: 'Bell',
       description: 'Send notices and alerts'
     }
+    ,{ label: 'Feedback Management',
+       path: '/feedback-dashboard',
+        icon: 'BarChart3' },
   ];
 
   const navItems = userRole === 'warden' ? wardenNavItems : studentNavItems;

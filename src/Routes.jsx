@@ -17,6 +17,9 @@ import AttendanceMarking from './pages/attendance-marking';
 import GrievanceManagement from './pages/grievance-management';
 import NoticesandAlerts from './pages/notices-and-alerts';
 import AttendanceMonitoring from './pages/attendance-monitoring';
+import ForgotPassword from './pages/forgot-password';
+import FeedbackDashboard from './pages/feedback-dashboard';
+import ProtectedRoute from "components/ProtectedRoute";
 
 const Routes = () => {
   return (
@@ -29,8 +32,24 @@ const Routes = () => {
         <Route path="/mark-attendance" element={<MarkAttendance />} />
         <Route path="/login" element={<Login />} />
         <Route path="/warden-registration" element={<WardenRegistration />} />
-        <Route path="/warden-dashboard" element={<WardenDashboard />} />
-        <Route path="/student-dashboard" element={<StudentDashboard />} />
+        <Route
+  path="/student-dashboard"
+  element={
+    <ProtectedRoute allowedRole="student">
+      <StudentDashboard />
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/warden-dashboard"
+  element={
+    <ProtectedRoute allowedRole="warden">
+      <WardenDashboard />
+    </ProtectedRoute>
+  }
+/>
+
         <Route path="/student-registration" element={<StudentRegistration />} />
          <Route path="/" element={<AttendanceMarking />} />
         <Route path="/give-feedback" element={<GiveFeedback />} />
@@ -45,6 +64,9 @@ const Routes = () => {
         <Route path="/attendance-marking" element={<AttendanceMarking />} />
         <Route path="/grievance-management" element={<GrievanceManagement />} />
         <Route path="/attendance-monitoring" element={<AttendanceMonitoring />} />
+        <Route path="/" element={<ForgotPassword />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+         <Route path="/feedback-dashboard" element={<FeedbackDashboard />} />
         <Route path="*" element={<NotFound />} />
       </RouterRoutes>
       </ErrorBoundary>
