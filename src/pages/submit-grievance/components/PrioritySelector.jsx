@@ -8,24 +8,36 @@ const PrioritySelector = ({ value, onChange }) => {
       label: 'Low',
       description: 'Can be addressed within a week',
       icon: 'ArrowDown',
-      color: 'text-muted-foreground',
-      bgColor: 'bg-muted'
+      color: 'text-green-700',
+      bgColor: 'bg-green-50',
+      borderColor: 'border-green-300',
+      gradientFrom: 'from-green-400',
+      gradientTo: 'to-emerald-500',
+      shadowColor: 'shadow-green-500/30'
     },
     {
       value: 'medium',
       label: 'Medium',
       description: 'Needs attention within 2-3 days',
       icon: 'Minus',
-      color: 'text-warning',
-      bgColor: 'bg-warning/10'
+      color: 'text-orange-700',
+      bgColor: 'bg-orange-50',
+      borderColor: 'border-orange-300',
+      gradientFrom: 'from-orange-400',
+      gradientTo: 'to-yellow-500',
+      shadowColor: 'shadow-orange-500/30'
     },
     {
       value: 'high',
       label: 'High',
       description: 'Requires immediate attention',
       icon: 'ArrowUp',
-      color: 'text-destructive',
-      bgColor: 'bg-destructive/10'
+      color: 'text-red-700',
+      bgColor: 'bg-red-50',
+      borderColor: 'border-red-300',
+      gradientFrom: 'from-red-500',
+      gradientTo: 'to-pink-600',
+      shadowColor: 'shadow-red-500/30'
     }
   ];
 
@@ -44,35 +56,48 @@ const PrioritySelector = ({ value, onChange }) => {
             type="button"
             onClick={() => onChange(priority?.value)}
             className={`
-              relative p-4 rounded-lg border-2 transition-all duration-200
+              relative p-4 rounded-xl border-2 transition-all duration-300 transform
               ${value === priority?.value 
-                ? 'border-primary bg-primary/5' :'border-border bg-card hover:border-primary/30'
+                ? `${priority?.borderColor} ${priority?.bgColor} scale-105 shadow-lg ${priority?.shadowColor}` 
+                : 'border-gray-200 bg-white hover:border-gray-300 hover:scale-102 hover:shadow-md'
               }
             `}
           >
-            <div className="flex items-start gap-3">
+            {/* Gradient overlay when selected */}
+            {value === priority?.value && (
+              <div className={`absolute inset-0 bg-gradient-to-br ${priority?.gradientFrom} ${priority?.gradientTo} opacity-10 rounded-xl`} />
+            )}
+            
+            <div className="relative flex items-start gap-3">
               <div className={`
-                w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0
-                ${value === priority?.value ? priority?.bgColor : 'bg-muted'}
+                w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-300
+                ${value === priority?.value 
+                  ? `bg-gradient-to-br ${priority?.gradientFrom} ${priority?.gradientTo} shadow-md` 
+                  : 'bg-gray-100'
+                }
               `}>
                 <Icon 
                   name={priority?.icon} 
                   size={20} 
-                  color={value === priority?.value ? `var(--color-${priority?.value === 'low' ? 'muted-foreground' : priority?.value === 'medium' ? 'warning' : 'destructive'})` : 'var(--color-muted-foreground)'}
+                  color={value === priority?.value ? 'white' : '#9ca3af'}
                 />
               </div>
               <div className="flex-1 text-left">
-                <div className={`font-semibold text-sm mb-1 ${value === priority?.value ? priority?.color : 'text-foreground'}`}>
+                <div className={`font-bold text-base mb-1 transition-colors ${value === priority?.value ? priority?.color : 'text-gray-700'}`}>
                   {priority?.label}
                 </div>
-                <div className="text-xs text-muted-foreground caption">
+                <div className="text-xs text-gray-600">
                   {priority?.description}
                 </div>
               </div>
             </div>
+            
+            {/* Checkmark when selected */}
             {value === priority?.value && (
-              <div className="absolute top-2 right-2">
-                <Icon name="CheckCircle" size={18} color="var(--color-primary)" />
+              <div className="absolute top-3 right-3">
+                <div className={`w-6 h-6 rounded-full bg-gradient-to-br ${priority?.gradientFrom} ${priority?.gradientTo} flex items-center justify-center shadow-md`}>
+                  <Icon name="Check" size={14} color="white" />
+                </div>
               </div>
             )}
           </button>

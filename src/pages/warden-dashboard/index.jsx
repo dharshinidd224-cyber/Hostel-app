@@ -11,26 +11,61 @@ import ActivityTimeline from './components/ActivityTimeline';
 import BlockFilter from './components/BlockFilter';
 import api from '../../utils/api';
 
+
+const API_URL = "http://localhost:5000"; // change if deployed
+
+
 const WardenDashboard = () => {
+  const [selectedDate] = useState(
+  new Date().toISOString().split("T")[0]
+);
+const [summaryData, setSummaryData] = useState([]);
+
   const navigate = useNavigate();
   const [selectedBlock, setSelectedBlock] = useState('all');
   const [loading, setLoading] = useState(true);
 
   // ✅ State for real data
-  const [summaryData, setSummaryData] = useState([]);
+ const [summary, setSummary] = useState({
+  total: 0,
+  present: 0,
+  absent: 0,
+  percentage: 0
+});
+
+useEffect(() => {
+  const fetchSummary = async () => {
+    const token = localStorage.getItem("token");
+    
+    // Add block parameter if not 'all'
+    const blockParam = selectedBlock !== 'all' ? `&block=${selectedBlock}` : '';
+    const url = `${API_URL}/api/attendance/summary?date=${selectedDate}${blockParam}`;
+
+    const res = await fetch(url, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      setSummary({
+        total: data.total || 0,
+        present: data.present || 0,
+        absent: data.absent || 0,
+        percentage: parseFloat(data.percentage) || 0
+      });
+    }
+  };
+
+  fetchSummary();
+}, [selectedDate, selectedBlock]);  // ✅ Add selectedBlock as dependency
+
   const [recentActivities, setRecentActivities] = useState([]);
   const [notificationCount, setNotificationCount] = useState(0);
 
   const breadcrumbItems = [
     { label: 'Dashboard', path: '/warden-dashboard' }
   ];
-
-  const attendanceData = {
-    totalStudents: 450,
-    presentToday: 423,
-    absentToday: 27,
-    attendanceRate: 94
-  };
 
   const quickActions = [
     {
@@ -80,11 +115,11 @@ const WardenDashboard = () => {
   ];
 
   const blocks = [
-    { id: 1, name: 'Block A' },
-    { id: 2, name: 'Block B' },
-    { id: 3, name: 'Block C' },
-    { id: 4, name: 'Block D' }
-  ];
+  { id: 1, name: 'Block A', value: 'A' },
+  { id: 2, name: 'Block B', value: 'B' },
+  { id: 3, name: 'Block C', value: 'C' },
+  { id: 4, name: 'Block D', value: 'D' }
+];
 
   // ✅ Fetch dashboard data
   useEffect(() => {
@@ -272,7 +307,7 @@ const WardenDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pt-8">
       <DashboardNavigation userRole="warden" notificationCount={notificationCount} />
       <BreadcrumbNavigation items={breadcrumbItems} />
       <div className="max-w-screen-2xl mx-auto px-4 md:px-6 lg:px-8 py-6 md:py-8 lg:py-10">
@@ -285,6 +320,26 @@ const WardenDashboard = () => {
             <p className="text-sm md:text-base lg:text-lg text-muted-foreground">
               Monitor hostel operations and manage student activities
             </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button
+              variant="outline"
+              iconName="Download"
+              iconPosition="left"
+              className="text-sm md:text-base"
+            >
+              Export Report
+            </Button>
+            <Button
+              variant="destructive"
+              iconName="AlertTriangle"
+              iconPosition="left"
+              onClick={handleEmergencyAlert}
+              className="text-sm md:text-base"
+            >
+              Emergency Alert
+            </Button>
           </div>
         </div>
 
@@ -308,10 +363,10 @@ const WardenDashboard = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
           <div className="lg:col-span-1">
             <AttendanceWidget
-              totalStudents={attendanceData?.totalStudents}
-              presentToday={attendanceData?.presentToday}
-              absentToday={attendanceData?.absentToday}
-              attendanceRate={attendanceData?.attendanceRate}
+              totalStudents={summary.total}
+              presentToday={summary.present}
+              absentToday={summary.absent}
+              attendanceRate={summary.percentage}
             />
           </div>
           <div className="lg:col-span-2">
@@ -350,36 +405,93 @@ const WardenDashboard = () => {
           <ActivityTimeline activities={recentActivities} />
         </div>
 
-        {/* Statistics Overview */}
-        <div className="bg-card rounded-xl p-4 md:p-6 shadow-elevation-md border border-border">
+        {/* Weekly Overview */}
+        <div className="mb-6 md:mb-8">
           <h2 className="text-xl md:text-2xl font-semibold text-foreground mb-4 md:mb-6">
             Weekly Overview
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-            <div className="text-center p-4 md:p-6 bg-muted rounded-lg">
-              <div className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-3 md:mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-                <Icon name="TrendingUp" size={24} color="var(--color-primary)" className="md:w-8 md:h-8" />
+            {/* Avg. Attendance */}
+            <div 
+              className="relative rounded-2xl p-6 md:p-8 text-center transition-all duration-300 hover:scale-[1.02] hover:shadow-xl border-2"
+              style={{
+                background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 50%, #bfdbfe 100%)',
+                borderColor: '#3b82f680'
+              }}
+            >
+              <div 
+                className="absolute top-0 right-0 w-32 h-32 rounded-2xl opacity-20 pointer-events-none"
+                style={{
+                  background: 'radial-gradient(circle, #3b82f640 0%, transparent 70%)',
+                }}
+              />
+              <div 
+                className="w-16 h-16 md:w-20 md:h-20 mx-auto mb-4 rounded-2xl flex items-center justify-center shadow-lg transform transition-transform duration-300 hover:rotate-6 relative z-10"
+                style={{
+                  background: '#3b82f6',
+                  boxShadow: '0 8px 16px #3b82f640'
+                }}
+              >
+                <Icon name="TrendingUp" size={32} color="#ffffff" className="md:w-10 md:h-10" />
               </div>
-              <p className="text-2xl md:text-3xl font-semibold text-foreground mb-1 md:mb-2">96%</p>
-              <p className="text-sm md:text-base text-muted-foreground">Avg. Attendance</p>
+              <p className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-2 relative z-10">96%</p>
+              <p className="text-sm md:text-base text-gray-600 font-medium relative z-10">Avg. Attendance</p>
             </div>
 
-            <div className="text-center p-4 md:p-6 bg-muted rounded-lg">
-              <div className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-3 md:mb-4 rounded-full bg-success/10 flex items-center justify-center">
-                <Icon name="CheckCircle" size={24} color="var(--color-success)" className="md:w-8 md:h-8" />
+            {/* Resolution Rate */}
+            <div 
+              className="relative rounded-2xl p-6 md:p-8 text-center transition-all duration-300 hover:scale-[1.02] hover:shadow-xl border-2"
+              style={{
+                background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 50%, #a7f3d0 100%)',
+                borderColor: '#10b98180'
+              }}
+            >
+              <div 
+                className="absolute top-0 right-0 w-32 h-32 rounded-2xl opacity-20 pointer-events-none"
+                style={{
+                  background: 'radial-gradient(circle, #10b98140 0%, transparent 70%)',
+                }}
+              />
+              <div 
+                className="w-16 h-16 md:w-20 md:h-20 mx-auto mb-4 rounded-2xl flex items-center justify-center shadow-lg transform transition-transform duration-300 hover:rotate-6 relative z-10"
+                style={{
+                  background: '#10b981',
+                  boxShadow: '0 8px 16px #10b98140'
+                }}
+              >
+                <Icon name="CheckCircle" size={32} color="#ffffff" className="md:w-10 md:h-10" />
               </div>
-              <p className="text-2xl md:text-3xl font-semibold text-foreground mb-1 md:mb-2">
+              <p className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-2 relative z-10">
                 {summaryData.length > 0 ? Math.round((summaryData[3].count / summaryData[0].count) * 100) : 78}%
               </p>
-              <p className="text-sm md:text-base text-muted-foreground">Resolution Rate</p>
+              <p className="text-sm md:text-base text-gray-600 font-medium relative z-10">Resolution Rate</p>
             </div>
 
-            <div className="text-center p-4 md:p-6 bg-muted rounded-lg">
-              <div className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-3 md:mb-4 rounded-full bg-secondary/10 flex items-center justify-center">
-                <Icon name="Clock" size={24} color="var(--color-secondary)" className="md:w-8 md:h-8" />
+            {/* Avg. Response Time */}
+            <div 
+              className="relative rounded-2xl p-6 md:p-8 text-center transition-all duration-300 hover:scale-[1.02] hover:shadow-xl border-2"
+              style={{
+                background: 'linear-gradient(135deg, #faf5ff 0%, #f3e8ff 50%, #e9d5ff 100%)',
+                borderColor: '#8b5cf680'
+              }}
+            >
+              <div 
+                className="absolute top-0 right-0 w-32 h-32 rounded-2xl opacity-20 pointer-events-none"
+                style={{
+                  background: 'radial-gradient(circle, #8b5cf640 0%, transparent 70%)',
+                }}
+              />
+              <div 
+                className="w-16 h-16 md:w-20 md:h-20 mx-auto mb-4 rounded-2xl flex items-center justify-center shadow-lg transform transition-transform duration-300 hover:rotate-6 relative z-10"
+                style={{
+                  background: '#8b5cf6',
+                  boxShadow: '0 8px 16px #8b5cf640'
+                }}
+              >
+                <Icon name="Clock" size={32} color="#ffffff" className="md:w-10 md:h-10" />
               </div>
-              <p className="text-2xl md:text-3xl font-semibold text-foreground mb-1 md:mb-2">2.5h</p>
-              <p className="text-sm md:text-base text-muted-foreground">Avg. Response Time</p>
+              <p className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-2 relative z-10">2.5h</p>
+              <p className="text-sm md:text-base text-gray-600 font-medium relative z-10">Avg. Response Time</p>
             </div>
           </div>
         </div>

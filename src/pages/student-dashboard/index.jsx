@@ -42,8 +42,6 @@ const StudentDashboard = () => {
       description: "Mark your daily hostel attendance using Wi-Fi validation",
       icon: "CheckSquare",
       route: "/mark-attendance",
-      badge: attendanceData?.status === 'pending' ? 'Pending' : 'Marked',
-      badgeColor: attendanceData?.status === 'pending' ? 'bg-warning' : 'bg-success',
       iconColor: "var(--color-success)"
     },
     {

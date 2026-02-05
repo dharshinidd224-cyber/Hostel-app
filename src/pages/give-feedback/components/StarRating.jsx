@@ -1,51 +1,107 @@
 import React, { useState } from 'react';
-import Icon from '../../../components/AppIcon';
+import { Star } from 'lucide-react';
 
-const StarRating = ({ rating, onRatingChange, disabled = false, size = 24 }) => {
-  const [hoverRating, setHoverRating] = useState(0);
+const StarRating = ({ 
+  rating, 
+  onRatingChange, 
+  disabled = false, 
+  size = 32 
+}) => {
+  const [hoveredStar, setHoveredStar] = useState(0);
 
-  const handleMouseEnter = (index) => {
+  const handleStarClick = (starValue) => {
     if (!disabled) {
-      setHoverRating(index);
+      onRatingChange(starValue);
+    }
+  };
+
+  const handleMouseEnter = (starValue) => {
+    if (!disabled) {
+      setHoveredStar(starValue);
     }
   };
 
   const handleMouseLeave = () => {
-    setHoverRating(0);
-  };
-
-  const handleClick = (index) => {
     if (!disabled) {
-      onRatingChange(index);
+      setHoveredStar(0);
     }
   };
 
   return (
-    <div className="flex items-center gap-1">
-      {[1, 2, 3, 4, 5]?.map((index) => {
-        const isFilled = index <= (hoverRating || rating);
+    <div className="star-rating-container">
+      {[1, 2, 3, 4, 5].map((starValue) => {
+        const isFilled = starValue <= (hoveredStar || rating);
+        
         return (
           <button
-            key={index}
+            key={starValue}
             type="button"
-            onClick={() => handleClick(index)}
-            onMouseEnter={() => handleMouseEnter(index)}
+            onClick={() => handleStarClick(starValue)}
+            onMouseEnter={() => handleMouseEnter(starValue)}
             onMouseLeave={handleMouseLeave}
             disabled={disabled}
-            className={`transition-all duration-200 ${
-              disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:scale-110'
-            }`}
-            aria-label={`Rate ${index} out of 5 stars`}
+            className={`star-button ${isFilled ? 'filled' : ''} ${disabled ? 'disabled' : ''}`}
+            aria-label={`Rate ${starValue} stars`}
           >
-            <Icon
-              name="Star"
+            <Star
               size={size}
-              color={isFilled ? 'var(--color-accent)' : 'var(--color-muted-foreground)'}
-              className={isFilled ? 'fill-current' : ''}
+              className={`star-icon ${isFilled ? 'filled' : ''}`}
+              fill={isFilled ? 'currentColor' : 'none'}
+              strokeWidth={1.5}
             />
           </button>
         );
       })}
+
+      <style jsx>{`
+        .star-rating-container {
+          display: flex;
+          gap: 6px;
+          align-items: center;
+        }
+
+        .star-button {
+          background: none;
+          border: none;
+          padding: 2px;
+          cursor: pointer;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          color: #e5e7eb;
+          position: relative;
+          border-radius: 4px;
+        }
+
+        .star-button:not(.disabled):hover {
+          transform: scale(1.1);
+        }
+
+        .star-button:not(.disabled):active {
+          transform: scale(0.95);
+        }
+
+        .star-button.disabled {
+          cursor: not-allowed;
+          opacity: 0.6;
+        }
+
+        .star-icon {
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          display: block;
+        }
+
+        .star-icon.filled {
+          color: #fbbf24;
+        }
+
+        .star-button:not(.disabled):hover .star-icon {
+          filter: drop-shadow(0 2px 4px rgba(251, 191, 36, 0.3));
+        }
+
+        /* Remove the pop animation for cleaner look */
+        .star-button.filled .star-icon {
+          color: #fbbf24;
+        }
+      `}</style>
     </div>
   );
 };

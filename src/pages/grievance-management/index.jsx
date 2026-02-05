@@ -184,8 +184,7 @@ if (loading) {
       <div className="min-h-screen bg-background">
         <RoleBasedNavigation userRole="warden" />
         <main className="main-content">
-          
-          <div className="content-container">
+          <div className="px-4 sm:px-6 lg:px-8 max-w-[1440px] mx-auto">
             <div className="text-center py-12">
               <p className="text-muted-foreground">Loading grievances...</p>
             </div>
@@ -196,14 +195,20 @@ if (loading) {
   }
 
   return (
-  <div className="min-h-screen bg-background">
-    <RoleBasedNavigation userRole="warden" />
+    <div className="min-h-screen bg-background">
+      <RoleBasedNavigation userRole="warden" />
 
-    <main className={`main-content ${notification ? 'with-notification' : ''}`}>
-      {/* CENTERED CONTAINER */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      {notification && (
+        <NotificationDisplay
+          notification={notification}
+          onDismiss={() => setNotification(null)}
+          autoHideDuration={5000}
+        />
+      )}
 
-        <div className="content-container">
+      {/* ✅ FIXED LAYOUT */}
+      <main className="main-content">
+        <div className="px-4 sm:px-6 lg:px-8 max-w-[1440px] mx-auto">
 
           {/* Back Button */}
           <button
@@ -214,18 +219,20 @@ if (loading) {
             <span>Back</span>
           </button>
 
-          {/* Page Header */}
+          {/* HEADER */}
           <div className="mb-8">
-            <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
+            <h1 className="text-3xl md:text-4xl font-bold mb-2">
               Grievance Management
             </h1>
-            <p className="text-base md:text-lg text-muted-foreground">
+            <p className="text-muted-foreground">
               Review, update, and resolve student complaints efficiently
             </p>
           </div>
 
+          {/* ANALYTICS */}
           <GrievanceAnalytics analytics={analytics} />
 
+          {/* QUICK ACTIONS */}
           <QuickActions
             onEmergencyClick={handleEmergencyClick}
             onOverdueClick={handleOverdueClick}
@@ -233,6 +240,7 @@ if (loading) {
             overdueCount={overdueCount}
           />
 
+          {/* FILTERS */}
           <GrievanceFilters
             filters={filters}
             onFilterChange={handleFilterChange}
@@ -240,6 +248,7 @@ if (loading) {
             resultsCount={filteredGrievances?.length}
           />
 
+          {/* TABLE / MOBILE */}
           {isMobile ? (
             <div className="space-y-4">
               {filteredGrievances?.map((grievance) => (
@@ -267,35 +276,31 @@ if (loading) {
               onBulkUpdate={handleBulkUpdate}
             />
           )}
-
         </div>
-      </div>
-    </main>
+      </main>
 
-    {/* MODALS OUTSIDE MAIN */}
-    <StatusUpdateModal
-      isOpen={isStatusModalOpen}
-      onClose={() => {
-        setIsStatusModalOpen(false);
-        setSelectedGrievance(null);
-      }}
-      grievance={selectedGrievance}
-      onUpdate={handleUpdateSubmit}
-    />
+      {/* MODALS */}
+      <StatusUpdateModal
+        isOpen={isStatusModalOpen}
+        onClose={() => {
+          setIsStatusModalOpen(false);
+          setSelectedGrievance(null);
+        }}
+        grievance={selectedGrievance}
+        onUpdate={handleUpdateSubmit}
+      />
 
-    <BulkUpdateModal
-      isOpen={isBulkModalOpen}
-      onClose={() => {
-        setIsBulkModalOpen(false);
-        setSelectedGrievances([]);
-      }}
-      selectedCount={selectedGrievances.length}
-      onUpdate={handleBulkUpdateSubmit}
-    />
-  </div>
-);
-
-
+      <BulkUpdateModal
+        isOpen={isBulkModalOpen}
+        onClose={() => {
+          setIsBulkModalOpen(false);
+          setSelectedGrievances([]);
+        }}
+        selectedCount={selectedGrievances.length}
+        onUpdate={handleBulkUpdateSubmit}
+      />
+    </div>
+  );
 };
 
 export default GrievanceManagement;

@@ -3,6 +3,7 @@ import Icon from '../../../components/AppIcon';
 
 const NoticeAlertHeader = ({ unreadCount }) => {
   return (
+    
     <div className="mb-6">
       <div className="flex items-center justify-between">
         <div>

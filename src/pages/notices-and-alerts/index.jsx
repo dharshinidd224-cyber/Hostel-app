@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import DashboardNavigation from '../../components/navigation/DashboardNavigation';
+import BreadcrumbNavigation from '../../components/navigation/BreadcrumbNavigation';
 import NoticeAlertHeader from './components/NoticeAlertHeader';
 import TabFilter from './components/TabFilter';
 import SearchAndFilter from './components/SearchAndFilter';
@@ -14,7 +15,7 @@ const NoticesAndAlerts = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [priorityFilter, setPriorityFilter] = useState('all');
   const [dateFilter, setDateFilter] = useState('all');
-const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const [notices, setNotices] = useState([]);
   const [alerts, setAlerts] = useState([]);
@@ -43,10 +44,10 @@ const navigate = useNavigate();
     fetchNoticesAndAlerts();
   }, []);
 
-  const breadcrumbItems = [
+ /* const breadcrumbItems = [
     { label: 'Dashboard', path: '/student-dashboard' },
     { label: 'Notices & Alerts', path: '/notices-and-alerts' }
-  ];
+  ];*/
 
   // Combine and filter items
   const allItems = [
@@ -118,7 +119,7 @@ const navigate = useNavigate();
           <title>Notices & Alerts - Student Dashboard</title>
         </Helmet>
         <DashboardNavigation userRole="student" notificationCount={0} />
-        <div className="min-h-screen bg-background pt-6">
+        <div className="min-h-screen bg-background">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <div className="text-center py-12">
               <p className="text-muted-foreground">Loading notices and alerts...</p>
@@ -131,6 +132,7 @@ const navigate = useNavigate();
 
   return (
     <>
+      
       <Helmet>
         <title>Notices & Alerts - Student Dashboard</title>
         <meta name="description" content="View all hostel notices and alerts from wardens" />
@@ -138,18 +140,16 @@ const navigate = useNavigate();
 
       <DashboardNavigation userRole="student" notificationCount={unreadCount} />
 
-      <div className="min-h-screen bg-background pt-6">
+      <div className="min-h-screen bg-background pt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          
-          {/* Back Button */}
-<button
-  onClick={() => navigate('/student-dashboard')}
-  className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors mb-6 mt-8"
->
-  <Icon name="ArrowLeft" size={20} />
-  <span>Back</span>
-</button>
-
+    {/* Back Button */}
+          <button
+            onClick={() => navigate(-1)}
+            className="back-button-enhanced"
+          >
+            <Icon name="ArrowLeft" size={20} />
+            <span>Back</span>
+          </button>
 
           <NoticeAlertHeader unreadCount={unreadCount} />
 
@@ -172,6 +172,30 @@ const navigate = useNavigate();
 
           <NoticeAlertList items={filteredItems} />
         </div>
+         <style jsx>{`
+      .back-button-enhanced {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 16px;
+          background: white;
+          border: 1px solid #e5e7eb;
+          border-radius: 10px;
+          color: #6b7280;
+          font-size: 0.9375rem;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          margin-bottom: 24px;
+        }
+
+        .back-button-enhanced:hover {
+          color: #111827;
+          border-color: #d1d5db;
+          background: #f9fafb;
+          transform: translateX(-4px);
+        }
+       `} </style>
       </div>
     </>
   );

@@ -1,143 +1,263 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet';
 import AuthenticationNavigation from '../../components/navigation/AuthenticationNavigation';
-import RegistrationForm from './components/RegistrationForm';
-import SecurityFeatures from './components/SecurityFeatures';
-import ResponsibilitiesOverview from './components/ResponsibilitiesOverview';
+import Button from '../../components/ui/Button';
+import Input from '../../components/ui/Input';
 import Icon from '../../components/AppIcon';
+import api from '../../utils/api';
 
 const WardenRegistration = () => {
+  const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const [formData, setFormData] = useState({
+    name: '',
+    staff_id: '',
+    phone_number: '',
+    password: '',
+    confirmPassword: ''
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    setError('');
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    // Validation
+    if (!formData.name || !formData.staff_id || !formData.phone_number || !formData.password || !formData.confirmPassword) {
+      setError('All fields are required');
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    if (formData.password.length < 8) {
+      setError('Password must be at least 8 characters long');
+      return;
+    }
+
+    if (!/^STAFF\d{4}$/.test(formData.staff_id)) {
+      setError('Staff ID must be in format: STAFF followed by 4 digits (e.g., STAFF1234)');
+      return;
+    }
+
+    if (!/^\d{10}$/.test(formData.phone_number)) {
+      setError('Phone number must be 10 digits');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await api.post('/auth/register/warden', {
+        name: formData.name,
+        staff_id: formData.staff_id,
+        phone_number: formData.phone_number,
+        password: formData.password
+      });
+
+      if (response.data.success) {
+        navigate('/login', { 
+          state: { 
+            message: 'Registration successful! Please login with your credentials.',
+            type: 'success'
+          } 
+        });
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Registration failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-background">
-      <AuthenticationNavigation />
-      <div className="max-w-screen-2xl mx-auto px-4 md:px-6 lg:px-8 py-6 md:py-8 lg:py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 lg:gap-10">
-          <div className="space-y-6 md:space-y-8">
-            <div className="bg-gradient-to-br from-primary/10 via-secondary/5 to-accent/5 rounded-xl p-6 md:p-8 border border-primary/20">
-              <div className="flex items-start gap-4 mb-6">
-                <div className="w-12 h-12 md:w-14 md:h-14 bg-primary rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Icon name="Building2" size={28} color="white" />
+    <>
+      <Helmet>
+        <title>Warden Registration - HostelApp</title>
+        <meta name="description" content="Register as a warden to manage hostel operations" />
+      </Helmet>
+      
+      <div className="min-h-screen bg-background">
+        <AuthenticationNavigation />
+        
+        <div className="flex items-center justify-center min-h-[calc(100vh-80px)] px-4 py-8">
+          <div className="w-full max-w-2xl">
+            {/* Header */}
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-primary/10 mb-4">
+                <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
+                  <Icon name="Shield" size={24} color="white" />
                 </div>
+              </div>
+              <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
+                Warden Registration
+              </h1>
+              <p className="text-base text-muted-foreground">
+                Create your administrative account to manage hostel operations
+              </p>
+            </div>
+            
+            {/* Form Card */}
+            <div className="bg-card rounded-2xl shadow-elevation-lg border border-border p-8">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {error && (
+                  <div className="p-4 rounded-lg bg-destructive/10 border border-destructive/20 flex items-start gap-3">
+                    <Icon name="AlertCircle" size={20} color="var(--color-destructive)" />
+                    <p className="text-sm text-destructive flex-1">{error}</p>
+                  </div>
+                )}
+
+                {/* Full Name */}
                 <div>
-                  <h2 className="text-xl md:text-2xl font-semibold text-foreground mb-2">
-                    Welcome to HostelApp
-                  </h2>
-                  <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
-                    Join our administrative team to streamline hostel operations and enhance student living experience through efficient management systems.
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    Full Name <span className="text-destructive">*</span>
+                  </label>
+                  <Input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    placeholder="Enter your full name"
+                    required
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Your official name as per institution records
                   </p>
                 </div>
-              </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-card rounded-lg p-4 text-center">
-                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <Icon name="Users" size={24} color="var(--color-primary)" />
-                  </div>
-                  <p className="text-2xl md:text-3xl font-semibold text-foreground mb-1">500+</p>
-                  <p className="text-xs md:text-sm text-muted-foreground">Students Managed</p>
+                {/* Staff ID */}
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    Staff ID <span className="text-destructive">*</span>
+                  </label>
+                  <Input
+                    type="text"
+                    name="staff_id"
+                    value={formData.staff_id}
+                    onChange={handleChange}
+                    placeholder="STAFF1234"
+                    required
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Format: STAFF followed by 4 digits
+                  </p>
                 </div>
-                <div className="bg-card rounded-lg p-4 text-center">
-                  <div className="w-12 h-12 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <Icon name="Building" size={24} color="var(--color-secondary)" />
-                  </div>
-                  <p className="text-2xl md:text-3xl font-semibold text-foreground mb-1">5</p>
-                  <p className="text-xs md:text-sm text-muted-foreground">Hostel Blocks</p>
+
+                {/* Phone Number */}
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    Phone Number <span className="text-destructive">*</span>
+                  </label>
+                  <Input
+                    type="tel"
+                    name="phone_number"
+                    value={formData.phone_number}
+                    onChange={handleChange}
+                    placeholder="9876543210"
+                    maxLength={10}
+                    required
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Enter your active mobile number for notifications
+                  </p>
                 </div>
-                <div className="bg-card rounded-lg p-4 text-center">
-                  <div className="w-12 h-12 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <Icon name="CheckCircle" size={24} color="var(--color-success)" />
+
+                {/* Password */}
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    Password <span className="text-destructive">*</span>
+                  </label>
+                  <div className="relative">
+                    <Input
+                      type={showPassword ? 'text' : 'password'}
+                      name="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      placeholder="Create a strong password"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <Icon name={showPassword ? 'EyeOff' : 'Eye'} size={20} />
+                    </button>
                   </div>
-                  <p className="text-2xl md:text-3xl font-semibold text-foreground mb-1">95%</p>
-                  <p className="text-xs md:text-sm text-muted-foreground">Resolution Rate</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Minimum 8 characters with letters, numbers, and symbols
+                  </p>
                 </div>
-              </div>
-            </div>
 
-            <div className="hidden lg:block">
-              <SecurityFeatures />
-            </div>
+                {/* Confirm Password */}
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    Confirm Password <span className="text-destructive">*</span>
+                  </label>
+                  <div className="relative">
+                    <Input
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      name="confirmPassword"
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      placeholder="Re-enter your password"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <Icon name={showConfirmPassword ? 'EyeOff' : 'Eye'} size={20} />
+                    </button>
+                  </div>
+                </div>
 
-            <div className="hidden lg:block">
-              <ResponsibilitiesOverview />
-            </div>
-          </div>
+                {/* Submit Button */}
+                <Button
+                  type="submit"
+                  variant="primary"
+                  fullWidth
+                  disabled={loading}
+                  iconName="UserPlus"
+                  iconPosition="left"
+                  className="mt-8"
+                >
+                  {loading ? 'Registering...' : 'Register'}
+                </Button>
 
-          <div className="space-y-6 md:space-y-8">
-            <RegistrationForm />
-
-            <div className="lg:hidden">
-              <SecurityFeatures />
-            </div>
-
-            <div className="lg:hidden">
-              <ResponsibilitiesOverview />
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-8 md:mt-10 lg:mt-12 bg-card rounded-xl shadow-elevation-md p-6 md:p-8">
-          <div className="text-center mb-6">
-            <h2 className="text-xl md:text-2xl font-semibold text-foreground mb-2">
-              Need Assistance?
-            </h2>
-            <p className="text-sm md:text-base text-muted-foreground">
-              Contact our support team for registration help or technical issues
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-            <div className="flex items-center gap-4 p-4 bg-muted/30 rounded-lg">
-              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Icon name="Mail" size={20} color="var(--color-primary)" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs text-muted-foreground mb-1">Email Support</p>
-                <p className="text-sm font-medium text-foreground truncate">admin@hostelapp.edu</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4 p-4 bg-muted/30 rounded-lg">
-              <div className="w-10 h-10 bg-secondary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Icon name="Phone" size={20} color="var(--color-secondary)" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs text-muted-foreground mb-1">Phone Support</p>
-                <p className="text-sm font-medium text-foreground">+91 9876543210</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4 p-4 bg-muted/30 rounded-lg">
-              <div className="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Icon name="Clock" size={20} color="var(--color-accent)" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs text-muted-foreground mb-1">Working Hours</p>
-                <p className="text-sm font-medium text-foreground">Mon-Sat, 9AM-6PM</p>
-              </div>
+                {/* Back to Login */}
+                <div className="text-center pt-4 border-t border-border">
+                  <Link
+                    to="/login"
+                    className="inline-flex items-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors"
+                  >
+                    <Icon name="ArrowLeft" size={16} />
+                    <span>Back to Login</span>
+                  </Link>
+                </div>
+              </form>
             </div>
           </div>
         </div>
       </div>
-      <footer className="bg-card border-t border-border mt-8 md:mt-12">
-        <div className="max-w-screen-2xl mx-auto px-4 md:px-6 lg:px-8 py-6">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-muted-foreground text-center md:text-left">
-              &copy; {new Date()?.getFullYear()} HostelApp. All rights reserved.
-            </p>
-            <div className="flex items-center gap-6">
-              <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-smooth">
-                Privacy Policy
-              </a>
-              <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-smooth">
-                Terms of Service
-              </a>
-              <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-smooth">
-                Help Center
-              </a>
-            </div>
-          </div>
-        </div>
-      </footer>
-    </div>
+    </>
   );
 };
 

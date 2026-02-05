@@ -59,7 +59,7 @@ const AttendanceHistoryWidget = ({ attendanceRecords, currentStreak }) => {
                     {record?.date}
                   </p>
                   <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
-                    {record?.time}
+                    {record?.time_marked}
                   </p>
                 </div>
               </div>

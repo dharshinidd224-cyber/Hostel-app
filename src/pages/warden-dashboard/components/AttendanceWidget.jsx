@@ -1,47 +1,70 @@
 import React from 'react';
 import Icon from '../../../components/AppIcon';
 
-const AttendanceWidget = ({ totalStudents, presentToday, absentToday, attendanceRate }) => {
+const AttendanceWidget = ({ totalStudents, present, absent, attendanceRate }) => {
   return (
-    <div className="bg-card rounded-xl p-4 md:p-6 shadow-elevation-md border border-border">
-      <div className="flex items-center justify-between mb-4 md:mb-6">
-        <h3 className="text-base md:text-lg lg:text-xl font-semibold text-foreground">Today's Attendance</h3>
-        <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-          <Icon name="Users" size={20} color="var(--color-primary)" className="md:w-6 md:h-6" />
-        </div>
-      </div>
-
-      <div className="space-y-3 md:space-y-4">
-        <div className="flex items-center justify-between">
-          <span className="text-sm md:text-base text-muted-foreground">Total Students</span>
-          <span className="text-base md:text-lg font-semibold text-foreground">{totalStudents}</span>
-        </div>
-
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 md:w-3 md:h-3 rounded-full bg-success"></div>
-            <span className="text-sm md:text-base text-muted-foreground">Present</span>
+    <div 
+      className="rounded-xl p-[2px] shadow-elevation-md transition-all duration-300 hover:shadow-xl"
+      style={{
+        background: 'linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899)'
+      }}
+    >
+      <div className="bg-white rounded-xl p-5 md:p-6 h-full">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-xl md:text-2xl font-bold text-gray-900">
+            Today's Attendance
+          </h3>
+          <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+            <Icon name="Users" size={20} color="#3b82f6" />
           </div>
-          <span className="text-base md:text-lg font-semibold text-success">{presentToday}</span>
         </div>
 
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 md:w-3 md:h-3 rounded-full bg-error"></div>
-            <span className="text-sm md:text-base text-muted-foreground">Absent</span>
+        {/* Stats */}
+        <div className="space-y-4 mb-6">
+          {/* Total Students */}
+          <div className="flex items-center justify-between">
+            <span className="text-base text-gray-600">Total Students</span>
+            <span className="text-2xl font-bold text-gray-900">{totalStudents}</span>
           </div>
-          <span className="text-base md:text-lg font-semibold text-error">{absentToday}</span>
+
+          {/* Present */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-green-500"></div>
+              <span className="text-base text-gray-600">Present</span>
+            </div>
+            <span className="text-2xl font-bold text-green-600">{present}</span>
+          </div>
+
+          {/* Absent */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-red-500"></div>
+              <span className="text-base text-gray-600">Absent</span>
+            </div>
+            <span className="text-2xl font-bold text-red-600">{absent}</span>
+          </div>
         </div>
 
-        <div className="pt-3 md:pt-4 border-t border-border">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm md:text-base font-medium text-foreground">Attendance Rate</span>
-            <span className="text-base md:text-lg font-semibold text-primary">{attendanceRate}%</span>
+        {/* Divider */}
+        <div className="border-t border-gray-200 my-5"></div>
+
+        {/* Attendance Rate */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-base text-gray-700 font-medium">Attendance Rate</span>
+            <span className="text-2xl font-bold text-blue-600">{attendanceRate}%</span>
           </div>
-          <div className="w-full h-2 md:h-3 bg-muted rounded-full overflow-hidden">
+          
+          {/* Progress Bar */}
+          <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
             <div 
-              className="h-full bg-primary rounded-full transition-smooth"
-              style={{ width: `${attendanceRate}%` }}
+              className="h-full rounded-full transition-all duration-500 ease-out"
+              style={{
+                width: `${attendanceRate}%`,
+                background: 'linear-gradient(90deg, #3b82f6, #2563eb)'
+              }}
             ></div>
           </div>
         </div>

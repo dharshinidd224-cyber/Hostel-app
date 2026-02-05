@@ -6,9 +6,8 @@ import GrievanceFilters from './components/GrievanceFilters';
 import GrievanceCard from './components/GrievanceCard';
 import EmptyState from './components/EmptyState';
 import Button from '../../components/ui/Button';
-import Icon from '../../components/AppIcon';
 import api from '../../utils/api';
-
+import Icon from '../../components/AppIcon';
 
 const MyGrievances = () => {
   
@@ -16,7 +15,7 @@ const MyGrievances = () => {
   // ✅ State for real grievances from API
   const [grievances, setGrievances] = useState([]);
   const [loading, setLoading] = useState(true);
-const navigate = useNavigate();
+  const navigate = useNavigate();
   const [filters, setFilters] = useState({
     search: '',
     status: 'all',
@@ -150,20 +149,17 @@ const navigate = useNavigate();
     <div className="min-h-screen bg-background">
       <RoleBasedNavigation userRole="student" />
       <main className="main-content">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="content-container">
-          {/* Back button with proper spacing */}
+           {/* Back Button */}
           <button
-            onClick={() => navigate('/student-dashboard')}
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6 mt-4"
+            onClick={() => navigate(-1)}
+            className="back-button-enhanced"
           >
             <Icon name="ArrowLeft" size={20} />
             <span>Back</span>
           </button>
-          
-
-          {/* Page Header with proper spacing */}
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+          {/* Page Header */}
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
             <div>
               <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-2">
                 My Grievances
@@ -182,13 +178,13 @@ const navigate = useNavigate();
             </Button>
           </div>
 
-          {/* Statistics with proper spacing */}
-          <div className="mb-8">
+          {/* Statistics */}
+          <div className="mb-6">
             <GrievanceStats stats={stats} />
           </div>
 
-          {/* Filters with proper spacing */}
-          <div className="mb-8">
+          {/* Filters */}
+          <div className="mb-6">
             <GrievanceFilters
               filters={filters}
               onFilterChange={handleFilterChange}
@@ -198,9 +194,9 @@ const navigate = useNavigate();
             />
           </div>
 
-          {/* Grievances List with bottom padding */}
+          {/* Grievances List */}
           {filteredGrievances?.length > 0 ? (
-            <div className="space-y-4 pb-8">
+            <div className="space-y-4">
               {filteredGrievances?.map((grievance) => (
                 <GrievanceCard
                   key={grievance?.grievance_id}
@@ -210,16 +206,37 @@ const navigate = useNavigate();
               ))}
             </div>
           ) : (
-            <div className="pb-8">
-              <EmptyState
-                hasFilters={hasActiveFilters}
-                onResetFilters={handleResetFilters}
-              />
-            </div>
+            <EmptyState
+              hasFilters={hasActiveFilters}
+              onResetFilters={handleResetFilters}
+            />
           )}
         </div>
-        </div>
       </main>
+      <style jsx>{`
+      .back-button-enhanced {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 16px;
+          background: white;
+          border: 1px solid #e5e7eb;
+          border-radius: 10px;
+          color: #6b7280;
+          font-size: 0.9375rem;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          margin-bottom: 24px;
+        }
+
+        .back-button-enhanced:hover {
+          color: #111827;
+          border-color: #d1d5db;
+          background: #f9fafb;
+          transform: translateX(-4px);
+        }
+       `} </style>
     </div>
   );
 };

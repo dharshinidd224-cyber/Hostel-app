@@ -16,6 +16,14 @@ const RoleBasedNavigation = ({
   const authRoutes = ['/login', '/student-registration', '/warden-registration'];
   const isAuthRoute = authRoutes?.includes(location?.pathname);
 
+   // ---------- MOBILE SCROLL LOCK ----------
+  useEffect(() => {
+    document.body.style.overflow = isMobileMenuOpen ? 'hidden' : 'unset';
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isMobileMenuOpen]);
+  
   if (isAuthRoute || !isAuthenticated) {
     return <AuthenticationNavigation />;
   }
@@ -80,13 +88,7 @@ const RoleBasedNavigation = ({
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
-  // ---------- MOBILE SCROLL LOCK ----------
-  useEffect(() => {
-    document.body.style.overflow = isMobileMenuOpen ? 'hidden' : 'unset';
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [isMobileMenuOpen]);
+ 
 
   // ---------- UI ----------
   return (
