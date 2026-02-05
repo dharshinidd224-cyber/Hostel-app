@@ -5,6 +5,7 @@ import NotificationDisplay from '../../components/ui/NotificationDisplay';
 import MessageTypeSelector from './components/MessageTypeSelector';
 import RichTextEditor from './components/RichTextEditor';
 import TargetAudienceSelector from './components/TargetAudienceSelector';
+import api from '../../utils/api';
 
 import AttachmentUpload from './components/AttachmentUpload';
 import MessagePreview from './components/MessagePreview';
@@ -85,23 +86,38 @@ const PostNoticeAlert = () => {
   };
 
   const handleSubmit = async (e) => {
-    e?.preventDefault();
+  e?.preventDefault();
 
-    if (!validateForm()) {
-      return;
-    }
+  if (!validateForm()) {
+    return;
+  }
 
-    setIsSubmitting(true);
+  setIsSubmitting(true);
 
-    try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      setShowSuccess(true);
-    } catch (error) {
-      console.error('Error posting message:', error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  try {
+    // Replace the setTimeout with actual API call
+    const noticeData = {
+      type: formData.type,
+      title: formData.title,
+      message: formData.content,
+      priority: formData.type === 'alert' ? 'high' : 'normal',
+      targets: formData.targets,
+      scheduled_date: formData.scheduleEnabled ? formData.scheduledDate : null,
+      scheduled_time: formData.scheduleEnabled ? formData.scheduledTime : null,
+      attachments: formData.attachments
+    };
+
+    const response = await api.post('/notices', noticeData);
+    console.log('✅ Notice posted successfully:', response.data);
+    
+    setShowSuccess(true);
+  } catch (error) {
+    console.error('❌ Error posting notice:', error);
+    alert('Failed to post notice. Please try again.');
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   const handlePostAnother = () => {
     setShowSuccess(false);

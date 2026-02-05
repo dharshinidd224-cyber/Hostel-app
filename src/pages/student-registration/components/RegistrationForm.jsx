@@ -148,10 +148,19 @@ const RegistrationForm = () => {
 
   try {
     await api.post("/auth/register", {
-      userId: formData.collegeId,
-      password: formData.password,
-      role: "student"
-    });
+  collegeId: formData.collegeId,
+  password: formData.password,
+  role: "student",
+
+  // 👇 SEND STUDENT DATA
+  name: formData.name,
+  roomNumber: formData.roomNumber,
+  blockNumber: formData.blockNumber,
+  department: formData.department,
+  phoneNumber: formData.phoneNumber,
+  year: formData.year
+});
+
 
     navigate("/login");
   } catch (err) {

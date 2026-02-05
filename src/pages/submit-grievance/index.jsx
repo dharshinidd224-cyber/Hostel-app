@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import RoleBasedNavigation from '../../components/navigation/RoleBasedNavigation';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
@@ -7,9 +8,10 @@ import PrioritySelector from './components/PrioritySelector';
 import DescriptionInput from './components/DescriptionInput';
 import ImageUploader from './components/ImageUploader';
 import SuccessModal from './components/SuccessModal';
-
+import api from '../../utils/api';
 
 const SubmitGrievance = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     category: '',
     priority: 'medium',
@@ -59,12 +61,22 @@ const SubmitGrievance = () => {
     setIsSubmitting(true);
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // ✅ Call backend API
+      const response = await api.post("/grievances", {
+        category: formData.category,
+        priority: formData.priority,
+        description: formData.description,
+        images: formData.images
+      });
 
-      const newGrievanceId = generateGrievanceId();
+      console.log("✅ Grievance submitted:", response.data);
+
+      // Get the grievance ID from response
+      const newGrievanceId = response.data.grievanceId;
       setGrievanceId(newGrievanceId);
       setShowSuccessModal(true);
 
+      // Reset form
       setFormData({
         category: '',
         priority: 'medium',
@@ -73,8 +85,13 @@ const SubmitGrievance = () => {
       });
       setErrors({});
     } catch (error) {
-      console.error('Error submitting grievance:', error);
-      alert('Failed to submit grievance. Please try again.');
+      console.error('❌ Error submitting grievance:', error);
+      
+      if (error.response?.data?.message) {
+        alert(error.response.data.message);
+      } else {
+        alert('Failed to submit grievance. Please try again.');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -90,8 +107,17 @@ const SubmitGrievance = () => {
       <RoleBasedNavigation userRole="student" />
       <main className="main-content">
         <div className="content-container">
-          <div className="max-w-5xl mx-auto">
-            <div className="mb-6 md:mb-8">
+          <div className="max-w-3xl mx-auto">
+            {/* Back button with proper top margin */}
+            <button
+              onClick={() => navigate('/student-dashboard')}
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6 mt-4"
+            >
+              <Icon name="ArrowLeft" size={20} />
+              <span>Back to Dashboard</span>
+            </button>
+
+            <div className="mb-8 md:mb-10">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
                   <Icon name="AlertCircle" size={24} color="var(--color-primary)" />
@@ -107,88 +133,87 @@ const SubmitGrievance = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
-              <div className="lg:col-span-2">
-                <form onSubmit={handleSubmit} className="space-y-6 md:space-y-8">
-                  <div className="card ml-0 mt-0 pr-6 pt-6">
-                    <div className="flex items-center gap-3 mb-6">
-                      <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
-                        <Icon name="FileText" size={20} color="var(--color-accent)" />
-                      </div>
-                      <h2 className="text-lg font-semibold text-foreground">
-                        Grievance Details
-                      </h2>
-                    </div>
-
-                    <div className="space-y-6">
-                      <CategorySelector
-                        value={formData?.category}
-                        onChange={(value) => {
-                          setFormData({ ...formData, category: value });
-                          setErrors({ ...errors, category: '' });
-                        }}
-                        error={errors?.category}
-                      />
-
-                      <PrioritySelector
-                        value={formData?.priority}
-                        onChange={(value) => {
-                          setFormData({ ...formData, priority: value });
-                          setErrors({ ...errors, priority: '' });
-                        }}
-                      />
-
-                      <DescriptionInput
-                        value={formData?.description}
-                        onChange={(value) => {
-                          setFormData({ ...formData, description: value });
-                          setErrors({ ...errors, description: '' });
-                        }}
-                        error={errors?.description}
-                      />
-
-                      <ImageUploader
-                        images={formData?.images}
-                        onChange={(images) => {
-                          setFormData({ ...formData, images });
-                        }}
-                        error={errors?.images}
-                      />
-                    </div>
+            <form onSubmit={handleSubmit} className="space-y-6 md:space-y-8">
+              <div className="card ml-0 mt-0 pr-6 pt-6">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
+                    <Icon name="FileText" size={20} color="var(--color-accent)" />
                   </div>
+                  <h2 className="text-lg font-semibold text-foreground">
+                    Grievance Details
+                  </h2>
+                </div>
 
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      setFormData({
-                        category: '',
-                        priority: 'medium',
-                        description: '',
-                        images: []
-                      });
-                      setErrors({});
+                <div className="space-y-6">
+                  <CategorySelector
+                    value={formData?.category}
+                    onChange={(value) => {
+                      setFormData({ ...formData, category: value });
+                      setErrors({ ...errors, category: '' });
                     }}
-                    iconName="RotateCcw"
-                    iconPosition="left"
-                    className="sm:w-auto"
-                  >
-                    Reset Form
-                  </Button>
-                  <Button
-                    type="submit"
-                    variant="default"
-                    loading={isSubmitting}
-                    iconName="Send"
-                    iconPosition="left"
-                    fullWidth
-                    className="sm:flex-1"
-                  >
-                    {isSubmitting ? 'Submitting...' : 'Submit Grievance'}
-                  </Button>
-                </form>
+                    error={errors?.category}
+                  />
+
+                  <PrioritySelector
+                    value={formData?.priority}
+                    onChange={(value) => {
+                      setFormData({ ...formData, priority: value });
+                      setErrors({ ...errors, priority: '' });
+                    }}
+                  />
+
+                  <DescriptionInput
+                    value={formData?.description}
+                    onChange={(value) => {
+                      setFormData({ ...formData, description: value });
+                      setErrors({ ...errors, description: '' });
+                    }}
+                    error={errors?.description}
+                  />
+
+                  <ImageUploader
+                    images={formData?.images}
+                    onChange={(images) => {
+                      setFormData({ ...formData, images });
+                    }}
+                    error={errors?.images}
+                  />
+                </div>
               </div>
-            </div>
+
+              {/* Button group with proper spacing */}
+              <div className="flex flex-col sm:flex-row gap-4 pb-8">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setFormData({
+                      category: '',
+                      priority: 'medium',
+                      description: '',
+                      images: []
+                    });
+                    setErrors({});
+                  }}
+                  iconName="RotateCcw"
+                  iconPosition="left"
+                  className="sm:w-auto"
+                >
+                  Reset Form
+                </Button>
+                <Button
+                  type="submit"
+                  variant="default"
+                  loading={isSubmitting}
+                  iconName="Send"
+                  iconPosition="left"
+                  fullWidth
+                  className="sm:flex-1"
+                >
+                  {isSubmitting ? 'Submitting...' : 'Submit Grievance'}
+                </Button>
+              </div>
+            </form>
           </div>
         </div>
       </main>

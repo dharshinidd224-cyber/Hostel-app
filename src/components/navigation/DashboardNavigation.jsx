@@ -58,21 +58,8 @@ const DashboardNavigation = ({ userRole = 'student', notificationCount = 0 }) =>
             </div>
 
             <div className="dashboard-navigation-actions">
-              <div className="relative">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  iconName="Bell"
-                  iconSize={20}
-                  onClick={() => {}}
-                />
-                {notificationCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-error text-error-foreground text-xs font-medium rounded-full flex items-center justify-center">
-                    {notificationCount > 9 ? '9+' : notificationCount}
-                  </span>
-                )}
-              </div>
-
+              {/* ❌ REMOVED: Notification Bell Icon */}
+              
               <Button
                 variant="ghost"
                 size="icon"

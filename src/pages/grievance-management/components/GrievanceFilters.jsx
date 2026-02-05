@@ -18,7 +18,7 @@ const GrievanceFilters = ({ filters, onFilterChange, onReset, resultsCount }) =>
 
   const statusOptions = [
     { value: 'all', label: 'All Status' },
-    { value: 'submitted', label: 'Submitted' },
+    { value: 'pending', label: 'Pending' },
     { value: 'in-progress', label: 'In Progress' },
     { value: 'resolved', label: 'Resolved' }
   ];

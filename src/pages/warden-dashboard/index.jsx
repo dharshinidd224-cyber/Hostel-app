@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardNavigation from '../../components/navigation/DashboardNavigation';
 import BreadcrumbNavigation from '../../components/navigation/BreadcrumbNavigation';
@@ -9,56 +9,20 @@ import AttendanceWidget from './components/AttendanceWidget';
 import QuickActionCard from './components/QuickActionCard';
 import ActivityTimeline from './components/ActivityTimeline';
 import BlockFilter from './components/BlockFilter';
+import api from '../../utils/api';
 
 const WardenDashboard = () => {
   const navigate = useNavigate();
   const [selectedBlock, setSelectedBlock] = useState('all');
+  const [loading, setLoading] = useState(true);
+
+  // ✅ State for real data
+  const [summaryData, setSummaryData] = useState([]);
+  const [recentActivities, setRecentActivities] = useState([]);
+  const [notificationCount, setNotificationCount] = useState(0);
 
   const breadcrumbItems = [
     { label: 'Dashboard', path: '/warden-dashboard' }
-  ];
-
-  const summaryData = [
-    {
-      id: 1,
-      title: 'Total Grievances',
-      count: 156,
-      icon: 'AlertCircle',
-      iconColor: 'var(--color-primary)',
-      bgColor: 'bg-primary/10',
-      trend: 'up',
-      trendValue: 12
-    },
-    {
-      id: 2,
-      title: 'Pending Complaints',
-      count: 23,
-      icon: 'Clock',
-      iconColor: 'var(--color-warning)',
-      bgColor: 'bg-warning/10',
-      trend: 'down',
-      trendValue: 8
-    },
-    {
-      id: 3,
-      title: 'In Progress',
-      count: 45,
-      icon: 'RefreshCw',
-      iconColor: 'var(--color-secondary)',
-      bgColor: 'bg-secondary/10',
-      trend: 'up',
-      trendValue: 5
-    },
-    {
-      id: 4,
-      title: 'Resolved Cases',
-      count: 88,
-      icon: 'CheckCircle',
-      iconColor: 'var(--color-success)',
-      bgColor: 'bg-success/10',
-      trend: 'up',
-      trendValue: 15
-    }
   ];
 
   const attendanceData = {
@@ -89,7 +53,7 @@ const WardenDashboard = () => {
       bgColor: 'bg-warning/10',
       actionText: 'Manage Grievances',
       actionPath: '/grievance-management',
-      badge: '23'
+      badge: summaryData.find(s => s.title === 'Pending Complaints')?.count || null
     },
     {
       id: 3,
@@ -99,7 +63,7 @@ const WardenDashboard = () => {
       iconColor: 'var(--color-secondary)',
       bgColor: 'bg-secondary/10',
       actionText: 'Create Notice and Alerts',
-      actionPath: '/post-notice',
+      actionPath: '/post-notice-alert',
       badge: null
     },
     {
@@ -111,64 +75,7 @@ const WardenDashboard = () => {
       bgColor: 'bg-success/10',
       actionText: 'View Feedback',
       actionPath: '/feedback-dashboard',
-      badge: '8'
-    }
-  ];
-
-  const recentActivities = [
-    {
-      id: 1,
-      type: 'grievance',
-      priority: 'high',
-      title: 'Water Supply Issue - Block A',
-      description: 'Student reported no water supply in rooms 301-305',
-      student: 'Rahul Kumar',
-      time: '5 mins ago'
-    },
-    {
-      id: 2,
-      type: 'attendance',
-      priority: 'low',
-      title: 'Attendance Marked',
-      description: '423 students marked present for today',
-      student: 'System',
-      time: '15 mins ago'
-    },
-    {
-      id: 3,
-      type: 'grievance',
-      priority: 'medium',
-      title: 'Food Quality Complaint',
-      description: 'Multiple students reported issues with dinner quality',
-      student: 'Priya Sharma',
-      time: '1 hour ago'
-    },
-    {
-      id: 4,
-      type: 'feedback',
-      priority: 'low',
-      title: 'Positive Feedback Received',
-      description: 'Student appreciated quick resolution of internet issue',
-      student: 'Amit Patel',
-      time: '2 hours ago'
-    },
-    {
-      id: 5,
-      type: 'grievance',
-      priority: 'high',
-      title: 'Electricity Outage - Block C',
-      description: 'Power failure reported in entire Block C',
-      student: 'Sneha Reddy',
-      time: '3 hours ago'
-    },
-    {
-      id: 6,
-      type: 'notice',
-      priority: 'medium',
-      title: 'Notice Posted',
-      description: 'Maintenance schedule for next week published',
-      student: 'Admin',
-      time: '4 hours ago'
+      badge: null
     }
   ];
 
@@ -179,13 +86,194 @@ const WardenDashboard = () => {
     { id: 4, name: 'Block D' }
   ];
 
+  // ✅ Fetch dashboard data
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        // Fetch grievances
+        const grievancesRes = await api.get('/grievances');
+        const grievances = grievancesRes.data;
+        console.log('✅ Grievances:', grievances);
+
+        // Fetch feedback
+        const feedbackRes = await api.get('/feedback');
+        const feedback = feedbackRes.data;
+        console.log('✅ Feedback:', feedback);
+
+        // Fetch notices
+        const noticesRes = await api.get('/notices');
+        const notices = noticesRes.data;
+        console.log('✅ Notices:', notices);
+
+        // Calculate summary stats
+        const totalGrievances = grievances.length;
+        const pendingGrievances = grievances.filter(g => g.status === 'pending').length;
+        const inProgressGrievances = grievances.filter(g => g.status === 'in-progress').length;
+        const resolvedGrievances = grievances.filter(g => g.status === 'resolved').length;
+
+        setSummaryData([
+          {
+            id: 1,
+            title: 'Total Grievances',
+            count: totalGrievances,
+            icon: 'AlertCircle',
+            iconColor: 'var(--color-primary)',
+            bgColor: 'bg-primary/10',
+            trend: 'up',
+            trendValue: 12
+          },
+          {
+            id: 2,
+            title: 'Pending Complaints',
+            count: pendingGrievances,
+            icon: 'Clock',
+            iconColor: 'var(--color-warning)',
+            bgColor: 'bg-warning/10',
+            trend: 'down',
+            trendValue: 8
+          },
+          {
+            id: 3,
+            title: 'In Progress',
+            count: inProgressGrievances,
+            icon: 'RefreshCw',
+            iconColor: 'var(--color-secondary)',
+            bgColor: 'bg-secondary/10',
+            trend: 'up',
+            trendValue: 5
+          },
+          {
+            id: 4,
+            title: 'Resolved Cases',
+            count: resolvedGrievances,
+            icon: 'CheckCircle',
+            iconColor: 'var(--color-success)',
+            bgColor: 'bg-success/10',
+            trend: 'up',
+            trendValue: 15
+          }
+        ]);
+
+        // Build activity timeline
+        const activities = [];
+
+        // Add recent grievances (high priority ones)
+        grievances
+          .filter(g => g.priority === 'high' || g.priority === 'urgent')
+          .slice(0, 2)
+          .forEach(g => {
+            activities.push({
+              id: `grievance-${g.id}`,
+              type: 'grievance',
+              priority: g.priority === 'urgent' ? 'high' : g.priority,
+              title: `${g.category} - ${g.student?.block_number ? `Block ${g.student.block_number}` : 'Student'}`,
+              description: g.description.substring(0, 80) + '...',
+              student: g.student?.name || 'Anonymous',
+              time: formatTimeAgo(g.created_at)
+            });
+          });
+
+        // Add recent feedback
+        feedback.slice(0, 1).forEach(f => {
+          activities.push({
+            id: `feedback-${f.id}`,
+            type: 'feedback',
+            priority: 'low',
+            title: `${f.category} Feedback Received`,
+            description: `Rating: ${f.rating}/5${f.comment ? ' - ' + f.comment.substring(0, 50) : ''}`,
+            student: f.student?.name || 'Anonymous',
+            time: formatTimeAgo(f.created_at)
+          });
+        });
+
+        // Add recent notices
+        notices.slice(0, 1).forEach(n => {
+          activities.push({
+            id: `notice-${n.id}`,
+            type: n.type === 'alert' ? 'alert' : 'notice',
+            priority: n.priority === 'high' ? 'high' : 'medium',
+            title: `${n.type === 'alert' ? 'Alert' : 'Notice'} Posted`,
+            description: n.title,
+            student: 'Admin',
+            time: formatTimeAgo(n.created_at)
+          });
+        });
+
+        // Add other grievances
+        grievances
+          .filter(g => g.priority !== 'high' && g.priority !== 'urgent')
+          .slice(0, 2)
+          .forEach(g => {
+            activities.push({
+              id: `grievance-other-${g.id}`,
+              type: 'grievance',
+              priority: g.priority || 'medium',
+              title: `${g.category} Issue`,
+              description: g.description.substring(0, 80) + '...',
+              student: g.student?.name || 'Anonymous',
+              time: formatTimeAgo(g.created_at)
+            });
+          });
+
+        // Sort by time (most recent first)
+        activities.sort((a, b) => {
+          const getTimestamp = (timeStr) => {
+            if (timeStr.includes('min')) return parseInt(timeStr);
+            if (timeStr.includes('hour')) return parseInt(timeStr) * 60;
+            if (timeStr.includes('day')) return parseInt(timeStr) * 1440;
+            return 9999;
+          };
+          return getTimestamp(a.time) - getTimestamp(b.time);
+        });
+
+        setRecentActivities(activities.slice(0, 6));
+        setNotificationCount(pendingGrievances + notices.filter(n => n.type === 'alert').length);
+
+      } catch (error) {
+        console.error('❌ Error fetching dashboard data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  // ✅ Helper function to format time
+  const formatTimeAgo = (timestamp) => {
+    const now = new Date();
+    const time = new Date(timestamp);
+    const diffMs = now - time;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins} min${diffMins > 1 ? 's' : ''} ago`;
+    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+  };
+
   const handleEmergencyAlert = () => {
     navigate('/send-alert');
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <DashboardNavigation userRole="warden" notificationCount={0} />
+        <div className="max-w-screen-2xl mx-auto px-4 md:px-6 lg:px-8 py-6">
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">Loading dashboard...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
-      <DashboardNavigation userRole="warden" notificationCount={5} />
+      <DashboardNavigation userRole="warden" notificationCount={notificationCount} />
       <BreadcrumbNavigation items={breadcrumbItems} />
       <div className="max-w-screen-2xl mx-auto px-4 md:px-6 lg:px-8 py-6 md:py-8 lg:py-10">
         {/* Header Section */}
@@ -197,17 +285,6 @@ const WardenDashboard = () => {
             <p className="text-sm md:text-base lg:text-lg text-muted-foreground">
               Monitor hostel operations and manage student activities
             </p>
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Button
-              variant="outline"
-              iconName="Download"
-              iconPosition="left"
-              className="text-sm md:text-base"
-            >
-              Export Report
-            </Button>
           </div>
         </div>
 
@@ -291,7 +368,9 @@ const WardenDashboard = () => {
               <div className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-3 md:mb-4 rounded-full bg-success/10 flex items-center justify-center">
                 <Icon name="CheckCircle" size={24} color="var(--color-success)" className="md:w-8 md:h-8" />
               </div>
-              <p className="text-2xl md:text-3xl font-semibold text-foreground mb-1 md:mb-2">78%</p>
+              <p className="text-2xl md:text-3xl font-semibold text-foreground mb-1 md:mb-2">
+                {summaryData.length > 0 ? Math.round((summaryData[3].count / summaryData[0].count) * 100) : 78}%
+              </p>
               <p className="text-sm md:text-base text-muted-foreground">Resolution Rate</p>
             </div>
 

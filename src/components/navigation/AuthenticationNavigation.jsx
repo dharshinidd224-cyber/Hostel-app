@@ -22,27 +22,6 @@ const AuthenticationNavigation = () => {
             </div>
             <span className="auth-navigation-title">HostelApp</span>
           </div>
-
-          <div className="auth-navigation-links">
-            <button
-              onClick={() => handleNavigation('/login')}
-              className={`auth-navigation-link ${isActive('/login') ? 'active' : ''}`}
-            >
-              Login
-            </button>
-            <button
-              onClick={() => handleNavigation('/student-registration')}
-              className={`auth-navigation-link ${isActive('/student-registration') ? 'active' : ''}`}
-            >
-              Student Registration
-            </button>
-            <button
-              onClick={() => handleNavigation('/warden-registration')}
-              className={`auth-navigation-link ${isActive('/warden-registration') ? 'active' : ''}`}
-            >
-              Warden Registration
-            </button>
-          </div>
         </div>
       </div>
     </nav>

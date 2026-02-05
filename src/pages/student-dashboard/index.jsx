@@ -7,17 +7,21 @@ import AttendanceStatusWidget from './components/AttendanceStatusWidget';
 import ServiceCard from './components/ServiceCard';
 import RecentGrievanceCard from './components/RecentGrievanceCard';
 import NoticeAlertCard from './components/NoticeAlertCard';
-import QuickActionsBar from './components/QuickActionsBar';
+import api from "../../utils/api";
 
 const StudentDashboard = () => {
-  const [studentData] = useState({
-    name: "Rahul Sharma",
-    collegeId: "CS2021045",
-    roomNumber: "204",
-    blockNumber: "A",
-    department: "Computer Science",
-    year: "3rd Year",
-    phoneNumber: "+91 98765 43210"
+  const [studentData, setStudentData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  
+  // ✅ Replace dummy data with state
+  const [recentGrievances, setRecentGrievances] = useState([]);
+  const [notices, setNotices] = useState([]);
+  const [alerts, setAlerts] = useState([]);
+  const [grievanceStats, setGrievanceStats] = useState({
+    total: 0,
+    pending: 0,
+    inProgress: 0,
+    resolved: 0
   });
 
   const [attendanceData] = useState({
@@ -26,62 +30,7 @@ const StudentDashboard = () => {
     markedDate: "31/01/2026"
   });
 
-  const [grievanceStats] = useState({
-    total: 5,
-    pending: 2,
-    inProgress: 1,
-    resolved: 2
-  });
-
-  const [recentGrievances] = useState([
-    {
-      id: 1,
-      category: "Water Supply",
-      description: "Low water pressure in bathroom during morning hours affecting daily routine",
-      status: "In Progress",
-      date: "29/01/2026"
-    },
-    {
-      id: 2,
-      category: "Internet",
-      description: "Wi-Fi connectivity issues in room, frequent disconnections during evening hours",
-      status: "Submitted",
-      date: "28/01/2026"
-    },
-    {
-      id: 3,
-      category: "Cleanliness",
-      description: "Common area cleaning not done properly, dustbins overflowing in corridor",
-      status: "Resolved",
-      date: "25/01/2026"
-    }
-  ]);
-
-  const [notices] = useState([
-    {
-      title: "Hostel Maintenance Schedule",
-      message: "Routine maintenance work will be conducted in Block A on 02/02/2026 from 10:00 AM to 2:00 PM. Water supply may be affected during this period.",
-      date: "30/01/2026",
-      priority: "normal"
-    },
-    {
-      title: "Mess Menu Update",
-      message: "New breakfast options including South Indian dishes will be available from next week. Feedback forms available at mess counter.",
-      date: "29/01/2026",
-      priority: "normal"
-    }
-  ]);
-
-  const [alerts] = useState([
-    {
-      title: "Emergency Contact Update",
-      message: "All students must update their emergency contact details in the hostel office by 05/02/2026. This is mandatory for safety protocols.",
-      date: "31/01/2026",
-      priority: "high"
-    }
-  ]);
-
-  const [notificationCount] = useState(3);
+  const [notificationCount, setNotificationCount] = useState(0);
 
   const breadcrumbItems = [
     { label: 'Dashboard', path: '/student-dashboard' }
@@ -126,7 +75,7 @@ const StudentDashboard = () => {
       title: "Notices",
       description: "View important announcements and hostel updates",
       icon: "Bell",
-      route: "/notices",
+      route: "/notices-and-alerts",
       badge: notices?.length,
       badgeColor: 'bg-blue-500',
       iconColor: "var(--color-secondary)"
@@ -135,12 +84,102 @@ const StudentDashboard = () => {
       title: "Alerts",
       description: "Check priority notifications and emergency messages",
       icon: "AlertTriangle",
-      route: "/alerts",
+      route: "/notices-and-alerts",
       badge: alerts?.length,
       badgeColor: 'bg-error',
       iconColor: "var(--color-error)"
     }
   ];
+
+  // ✅ Fetch all data on component mount
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        // Fetch student data
+        const studentRes = await api.get("/auth/me");
+        setStudentData(studentRes.data);
+        console.log("✅ Student data:", studentRes.data);
+
+        // Fetch grievances
+        const grievancesRes = await api.get("/grievances/my-grievances");
+        const allGrievances = grievancesRes.data;
+        console.log("✅ Grievances:", allGrievances);
+
+        // Calculate grievance stats
+        setGrievanceStats({
+          total: allGrievances.length,
+          pending: allGrievances.filter(g => g.status === 'pending').length,
+          inProgress: allGrievances.filter(g => g.status === 'in-progress').length,
+          resolved: allGrievances.filter(g => g.status === 'resolved').length
+        });
+
+        // Get latest 3 grievances and format them
+        const formattedGrievances = allGrievances
+          .slice(0, 3)
+          .map(g => ({
+            id: g.id,
+            category: g.category,
+            description: g.description,
+            status: g.status === 'in-progress' ? 'In Progress' : 
+                    g.status === 'pending' ? 'Submitted' : 'Resolved',
+            date: new Date(g.created_at).toLocaleDateString('en-GB')
+          }));
+        setRecentGrievances(formattedGrievances);
+
+        // Fetch notices
+        const noticesRes = await api.get("/notices");
+        const allNotices = noticesRes.data;
+        console.log("✅ Notices:", allNotices);
+
+        // Separate notices and alerts
+        const noticesList = allNotices
+          .filter(n => n.type === 'notice')
+          .slice(0, 3)
+          .map(n => ({
+            title: n.title,
+            message: n.message,
+            date: new Date(n.created_at).toLocaleDateString('en-GB'),
+            priority: n.priority
+          }));
+
+        const alertsList = allNotices
+          .filter(n => n.type === 'alert')
+          .slice(0, 3)
+          .map(n => ({
+            title: n.title,
+            message: n.message,
+            date: new Date(n.created_at).toLocaleDateString('en-GB'),
+            priority: n.priority
+          }));
+
+        setNotices(noticesList);
+        setAlerts(alertsList);
+
+        // Calculate notification count (unread notices + pending grievances)
+        setNotificationCount(
+          alertsList.length + 
+          allGrievances.filter(g => g.status === 'pending').length
+        );
+
+      } catch (err) {
+        console.error("❌ Failed to fetch dashboard data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-muted-foreground">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -160,15 +199,10 @@ const StudentDashboard = () => {
               blockNumber={studentData?.blockNumber}
             />
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-              <AttendanceStatusWidget 
-                status={attendanceData?.status}
-                lastMarkedTime={attendanceData?.lastMarkedTime}
-              />
-              <div className="lg:col-span-2">
-                <QuickActionsBar attendanceStatus={attendanceData?.status} />
-              </div>
-            </div>
+            <AttendanceStatusWidget 
+  status={attendanceData?.status}
+  lastMarkedTime={attendanceData?.lastMarkedTime}
+/>
 
             <div>
               <h2 className="text-xl md:text-2xl font-semibold text-foreground mb-4 md:mb-6">

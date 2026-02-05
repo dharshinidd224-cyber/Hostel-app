@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect,useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardNavigation from '../../components/navigation/DashboardNavigation';
 import BreadcrumbNavigation from '../../components/navigation/BreadcrumbNavigation';
+import api from "../../utils/api";
 
 import Button from '../../components/ui/Button';
 import CategoryCard from './components/CategoryCard';
@@ -61,110 +62,24 @@ const FeedbackDashboard = () => {
     }
   ];
 
-  const feedbackData = [
-    {
-      id: 1,
-      category: 'food',
-      studentName: 'Rahul Kumar',
-      studentId: 'STU2024001',
-      block: 'Block A',
-      room: '301',
-      rating: 4,
-      comment: 'The food quality has improved significantly. Really appreciate the variety in the menu.',
-      timestamp: '2 hours ago',
-      status: 'reviewed'
-    },
-    {
-      id: 2,
-      category: 'cleanliness',
-      studentName: 'Priya Sharma',
-      studentId: 'STU2024002',
-      block: 'Block B',
-      room: '205',
-      rating: 3,
-      comment: 'Common areas need more frequent cleaning, especially during weekends.',
-      timestamp: '5 hours ago',
-      status: 'pending'
-    },
-    {
-      id: 3,
-      category: 'security',
-      studentName: 'Amit Patel',
-      studentId: 'STU2024003',
-      block: 'Block C',
-      room: '412',
-      rating: 5,
-      comment: 'Security staff is very vigilant and helpful. Feel safe in the hostel.',
-      timestamp: '1 day ago',
-      status: 'reviewed'
-    },
-    {
-      id: 4,
-      category: 'food',
-      studentName: 'Sneha Reddy',
-      studentId: 'STU2024004',
-      block: 'Block A',
-      room: '156',
-      rating: 2,
-      comment: 'Dinner timing is too early. Would be better if extended by 30 minutes.',
-      timestamp: '1 day ago',
-      status: 'pending'
-    },
-    {
-      id: 5,
-      category: 'overall',
-      studentName: 'Vikram Singh',
-      studentId: 'STU2024005',
-      block: 'Block D',
-      room: '308',
-      rating: 4,
-      comment: 'Overall experience is good. Management is responsive to student concerns.',
-      timestamp: '2 days ago',
-      status: 'reviewed'
-    },
-    {
-      id: 6,
-      category: 'cleanliness',
-      studentName: 'Anjali Verma',
-      studentId: 'STU2024006',
-      block: 'Block B',
-      room: '401',
-      rating: 5,
-      comment: 'Washrooms are always clean and well-maintained. Great job by the cleaning staff!',
-      timestamp: '2 days ago',
-      status: 'reviewed'
-    },
-    {
-      id: 7,
-      category: 'food',
-      studentName: 'Rohan Gupta',
-      studentId: 'STU2024007',
-      block: 'Block C',
-      room: '210',
-      rating: 3,
-      comment: 'Need more vegetarian options in the menu. Current variety is limited.',
-      timestamp: '3 days ago',
-      status: 'pending'
-    },
-    {
-      id: 8,
-      category: 'security',
-      studentName: 'Kavya Nair',
-      studentId: 'STU2024008',
-      block: 'Block A',
-      room: '502',
-      rating: 4,
-      comment: 'Entry/exit monitoring is good. Visitor management system works well.',
-      timestamp: '3 days ago',
-      status: 'reviewed'
-    }
-  ];
+  const [feedbackData, setFeedbackData] = useState([]);
+  useEffect(() => {
+  api.get("/feedback")
+    .then(res => {
+      console.log("✅ FEEDBACK DATA:", res.data);  // ✅ Move console.log here
+      setFeedbackData(res.data);
+    })
+    .catch(err => console.error(err));
+}, []);
+
 
   const filteredFeedback = feedbackData?.filter(feedback => {
-    const categoryMatch = selectedCategory === 'all' || feedback?.category === selectedCategory;
-    const ratingMatch = selectedRating === 'all' || feedback?.rating === parseInt(selectedRating);
-    return categoryMatch && ratingMatch;
-  });
+  const categoryMatch = selectedCategory === 'all' || 
+    feedback?.category?.toLowerCase() === selectedCategory;
+  const ratingMatch = selectedRating === 'all' || 
+    feedback?.rating === parseInt(selectedRating);
+  return categoryMatch && ratingMatch;
+});
 
   const statsData = {
     totalFeedback: feedbackData?.length || 0,

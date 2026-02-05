@@ -52,12 +52,20 @@ const Routes = () => {
 
         <Route path="/student-registration" element={<StudentRegistration />} />
          <Route path="/" element={<AttendanceMarking />} />
-        <Route path="/give-feedback" element={<GiveFeedback />} />
+        // Only allow students to access the feedback page
+<Route 
+  path="/give-feedback" 
+  element={
+    <ProtectedRoute allowedRoles={['student']}>
+      <GiveFeedback />
+    </ProtectedRoute>
+  } 
+/>
         <Route path="/feedback" element={<GiveFeedback />} />
         <Route path="/post-notice-alert" element={<PostNoticeAlert />} />
         <Route path="/post-notice" element={<PostNoticeAlert />} />
         <Route path="/send-alert" element={<PostNoticeAlert />} />
-        <Route path="/notices" element={<NoticesandAlerts />} />
+        <Route path="/notices-and-alerts" element={<NoticesandAlerts />} />
         <Route path="/alerts" element={<NoticesandAlerts />} />
         <Route path="/submit-grievance" element={<SubmitGrievance />} />
         <Route path="/my-grievances" element={<MyGrievances />} />

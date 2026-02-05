@@ -6,6 +6,7 @@ import StatusBadgeSystem from '../../../components/ui/StatusBadgeSystem';
 import { Checkbox } from '../../../components/ui/Checkbox';
 
 const GrievanceMobileCard = ({ grievance, isSelected, onSelect, onStatusUpdate }) => {
+  console.log("📋 Grievance data:", grievance); // Add this line
   const [isExpanded, setIsExpanded] = useState(false);
 
   const getPriorityColor = (priority) => {
@@ -44,17 +45,12 @@ const GrievanceMobileCard = ({ grievance, isSelected, onSelect, onStatusUpdate }
         <div className="flex-1">
           <div className="flex items-start justify-between mb-3">
             <div className="flex items-center gap-3">
-              <Image
-                src={grievance?.studentAvatar}
-                alt={grievance?.studentAvatarAlt}
-                className="w-12 h-12 rounded-lg object-cover"
-              />
-              <div>
-                <div className="text-sm font-semibold text-foreground">{grievance?.studentName}</div>
-                <div className="text-xs text-muted-foreground caption">
-                  Block {grievance?.block} • Room {grievance?.room}
-                </div>
-              </div>
+             <div>
+  <div className="text-sm font-semibold text-foreground">{grievance?.student?.name}</div>
+  <div className="text-xs text-muted-foreground caption">
+    Block {grievance?.student?.block_number} • Room {grievance?.student?.room_number}
+  </div>
+</div>
             </div>
             <div className={`flex items-center gap-1 text-xs font-medium caption ${getPriorityColor(grievance?.priority)}`}>
               <Icon name={getPriorityIcon(grievance?.priority)} size={12} />
